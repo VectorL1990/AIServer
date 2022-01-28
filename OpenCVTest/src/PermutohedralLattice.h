@@ -124,5 +124,71 @@ private:
 
 class PermutohedralLattice
 {
+public:
+    PermutohedralLattice(int pd, int vd, int n) :
+        d(pd), vd(vd), n(n), hashTable(pd, vd) {
 
+        // Allocate storage for various arrays
+        elevated.resize(d+1);
+        scaleFactor.resize(d);
+        greedy.resize(d+1);
+        rank.resize(d+1);
+        barycentric.resize(d+2);
+        canonical.resize((d+1)*(d+1));
+        key.resize(d+1);
+        replay.resize(n*(d+1));
+        nReplay = 0;
+
+        // compute the coordinates of the canonical simplex, in which
+        // the difference between a contained point and the zero
+        // remainder vertex is always in ascending order.
+        for (int i = 0; i <= d; i++) {
+            for (int j = 0; j <= d-i; j++) {
+                canonical[i*(d+1)+j] = i;
+            }
+            for (int j = d-i+1; j <= d; j++) {
+                canonical[i*(d+1)+j] = i - (d+1);
+            }
+        }
+
+        // Compute part of the rotation matrix E that elevates a
+        // position vector into the hyperplane
+        for (int i = 0; i < d; i++) {
+            // the diagonal entries for normalization
+            scaleFactor[i] = 1.0f/(sqrtf((float)(i+1)*(i+2)));
+
+            // We presume that the user would like to do a Gaussian
+            // blur of standard deviation 1 in each dimension (or a
+            // total variance of d, summed over dimensions.) Because
+            // the total variance of the blur performed by this
+            // algorithm is not d, we must scale the space to offset
+            // this.
+            //
+            // The total variance of the algorithm is:
+            // [variance of splatting] +
+            // [variance of blurring] +
+            // [variance of splatting]
+            // = d(d+1)(d+1)/12 + d(d+1)(d+1)/2 + d(d+1)(d+1)/12
+            // = 2d(d+1)(d+1)/3.
+            //
+            // So we need to scale the space by (d+1)sqrt(2/3).
+
+            scaleFactor[i] *= (d+1)*sqrtf(2.0/3);
+        }
+    }
+
+private:
+    int d, vd, n;
+    vector<float> elevated, scaleFactor, barycentric;
+    vector<short> canonical, key, greedy;
+    vector<char> rank;
+
+    struct ReplayEntry {
+        int offset;
+        float weight;
+    };
+    vector<ReplayEntry> replay;
+    int nReplay;
+
+    HashTablePermutohedral hashTable;
 };
