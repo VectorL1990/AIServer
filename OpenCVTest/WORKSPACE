@@ -1,0 +1,18 @@
+workspace(name = "OpenCVTest")
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# =========For generating JSON compilation database====
+http_archive(
+    name = "bazel_compdb",
+    sha256 = "87e376a685eacfb27bcc0d0cdf5ded1d0b99d868390ac50f452ba6ed781caffe",
+    strip_prefix = "bazel-compilation-database-0.4.2",
+    url = "https://github.com/grailbio/bazel-compilation-database/archive/0.4.2.tar.gz",
+)
+
+new_local_repository(
+    name = "linux_opencv",
+    build_file = "opencv_linux.BUILD",
+    path = "/usr/local",
+)
